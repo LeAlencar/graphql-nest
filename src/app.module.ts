@@ -12,8 +12,8 @@ import { DatabaseModule } from './database/database.module';
       playground: true,
       autoSchemaFile: true,
     }),
-    UsersModule,
     DatabaseModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
