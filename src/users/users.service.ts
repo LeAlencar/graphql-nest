@@ -7,11 +7,28 @@ import { UpdateUserInput } from './dto/update-user.input';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
   async create(createUserInput: CreateUserInput) {
+    const userExists = await this.prisma.user.findUnique({
+      where: {
+        email: createUserInput.email,
+      },
+    });
+
+    if (userExists) {
+      return {
+        user: userExists,
+        success: null,
+        error: 'User already exists',
+      };
+    }
     const user = await this.prisma.user.create({
       data: createUserInput,
     });
 
-    return user;
+    return {
+      user,
+      success: 'User created with success',
+      error: null,
+    };
   }
 
   async findAll() {
@@ -19,20 +36,51 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  async update(id: number, updateUserInput: UpdateUserInput) {
-    const user = this.prisma.user.update({
-      data: updateUserInput,
+    const user = await this.prisma.user.findFirst({
       where: {
         id,
       },
     });
 
+    if (!user) {
+      return {
+        success: null,
+        error: 'User not found',
+      };
+    }
+
     return {
       user,
-      message: 'user created',
+      success: 'User found',
+      error: null,
+    };
+  }
+
+  async update(updateUserInput: UpdateUserInput) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: updateUserInput.id,
+      },
+    });
+
+    if (!user) {
+      return {
+        success: null,
+        error: 'User not found',
+      };
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      data: updateUserInput,
+      where: {
+        id: updateUserInput.id,
+      },
+    });
+
+    return {
+      user: updatedUser,
+      success: 'User updated',
+      error: null,
     };
   }
 
